@@ -17,6 +17,7 @@ device_dict = {}
 def get_devices():
     #返回 device model 和 device id
     rt = os.popen('adb devices').readlines()  # os.popen()执行系统命令并返回执行后的结果
+    print(rt)
     n = len(rt) - 2
     print("当前已连接待测手机数为：" + str(n))
     for i in range(n):

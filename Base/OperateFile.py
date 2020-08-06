@@ -2,7 +2,7 @@
 import os
 class base_file:
     #method(r,w,a)
-    def __init__(self, file, method='w+'):
+    def __init__(self, file, method='wb+'):
         self.file = file
         self.method = method
         self.fileHandle = None
@@ -28,12 +28,12 @@ class base_file:
         self.fileHandle.close()
     def check_file(self):
         if not os.path.isfile(self.file):
-            # print('文件不存在' + self.file)
-            # sys.exit()
+            print('文件不存在' + self.file)
             return False
         else:
+            print("文件存在！")
             return True
-        # print("文件存在！")
+
 
     def mkdir_file(self):
         if not os.path.isfile(self.file):
@@ -50,8 +50,9 @@ class base_file:
             print("删除文件成功")
         else:
             print("文件不存在")
-# if __name__ == '__main__':
-#     bf = base_file("text.xml")
-#     if bf.check_file() == False:
-#         bf.mkdir_file()
-#     bf.write_txt("111")
+
+if __name__ == '__main__':
+    bf = base_file("D:\\monkey\\info\\5OUB0OFDXL_cpu.pickle")
+    if bf.check_file() == False:
+        bf.mkdir_file()
+    bf.write_txt("111")

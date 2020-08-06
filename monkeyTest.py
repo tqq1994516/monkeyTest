@@ -13,6 +13,7 @@ from Base import BaseMonitor
 import threading
 
 
+
 #PATH = lambda p: os.path.abspath(os.path.join(os.path.dirname(__file__), p)) #报错：name '__file__' is not defined，os.path.dirname(path) 返回文件路径
 #修改为：
 PATH = lambda p: os.path.abspath(os.path.join(os.path.dirname(os.path.realpath('__file__')), p)) #os.path.realpath(path)  返回path的真实路径
@@ -65,9 +66,11 @@ def start(dev):
     print(num)
     app = {}
     Create_pickle(dev, app, num)
-    """os.popen("adb kill-server")
+    print("adb kill-server")
+    os.popen("adb kill-server")
+    print("adb start-server")
     os.popen("adb start-server")
-    time.sleep(5)"""
+    time.sleep(5)
 
 
     #手动测试部分（手动测试性能数据统计）,直接杀掉app进程即可结束测试统计（备注：操作过程中请不要杀掉app进程，否则测试终止）
@@ -226,10 +229,17 @@ def create_threads_monkey(device_list):
 
 if __name__ == '__main__':
     device_dir = os.path.exists(Config.info_path)
+    log_dir = os.path.exists(Config.log_location)
     if device_dir:
         print("持久性目录info已存在，继续执行测试!")
     else:
         os.mkdir(Config.info_path)  # 创建持久性目录
+        print("创建持久性目录info成功，继续执行测试!")
+    if log_dir:
+        print("持久性目录log已存在，继续执行测试!")
+    else:
+        os.mkdir(Config.log_location)  # 创建持久性目录
+        print("创建持久性目录log成功，继续执行测试!")
     device_list = BaseMonitor.get_devices()
     if ba.attached_devices():
         create_threads_monkey(device_list)

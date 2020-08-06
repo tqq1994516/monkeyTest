@@ -6,7 +6,7 @@ import os
 '''
 class OperateFile:
     #method(r,w,a)
-    def __init__(self, file, method='w+'):
+    def __init__(self, file, method='wb+'):
         self.file = file
         self.method = method
         self.fileHandle = None
