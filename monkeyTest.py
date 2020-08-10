@@ -12,24 +12,26 @@ from Base import BasePhoneMsg
 from Base import BaseMonitor
 import threading
 
-
-
-#PATH = lambda p: os.path.abspath(os.path.join(os.path.dirname(__file__), p)) #报错：name '__file__' is not defined，os.path.dirname(path) 返回文件路径
-#修改为：
-PATH = lambda p: os.path.abspath(os.path.join(os.path.dirname(os.path.realpath('__file__')), p)) #os.path.realpath(path)  返回path的真实路径
+# PATH = lambda p: os.path.abspath(os.path.join(os.path.dirname(__file__), p)) #报错：name '__file__' is not defined，os.path.dirname(path) 返回文件路径
+# 修改为：
+PATH = lambda p: os.path.abspath(
+    os.path.join(os.path.dirname(os.path.realpath('__file__')), p))  # os.path.realpath(path)  返回path的真实路径
 
 ba = AdbCommon.AndroidDebugBridge()
 info = []
+
 
 # 手机信息
 def get_phone(dev):
     phone_info = BasePhoneMsg.get_phone_Kernel(dev)
     app = {}
-    app["phone_name"] = phone_info[0]["phone_name"] + "_" + phone_info[0]["phone_model"] + "_" + phone_info[0]["release"]
+    app["phone_name"] = phone_info[0]["phone_name"] + "_" + phone_info[0]["phone_model"] + "_" + phone_info[0][
+        "release"]
     app["rom"] = phone_info[1]
     app["kel"] = phone_info[2]
     app["pix"] = phone_info[3]
     return app
+
 
 def destroy(dev):
     shutil.rmtree((PATH("./info/")))
@@ -56,9 +58,10 @@ def Create_pickle(dev, app, data):
     OperateFile(flow).mkdir_file()
     OperateFile(battery).mkdir_file()
     OperateFile(fps).mkdir_file()
-    OperateFile(PATH("./info/sumInfo.pickle")).mkdir_file() # 用于记录是否已经测试完毕，里面存的是一个整数
-    OperateFile(PATH("./info/info.pickle")).mkdir_file() # 用于记录统计结果的信息，是[{}]的形式
-    writeSum(0, data, PATH("./info/sumInfo.pickle")) # 初始化记录当前真实连接的设备数
+    OperateFile(PATH("./info/sumInfo.pickle")).mkdir_file()  # 用于记录是否已经测试完毕，里面存的是一个整数
+    OperateFile(PATH("./info/info.pickle")).mkdir_file()  # 用于记录统计结果的信息，是[{}]的形式
+    writeSum(0, data, PATH("./info/sumInfo.pickle"))  # 初始化记录当前真实连接的设备数
+
 
 def start(dev):
     rt = os.popen('adb devices').readlines()  # os.popen()执行系统命令并返回执行后的结果
@@ -72,8 +75,7 @@ def start(dev):
     os.popen("adb start-server")
     time.sleep(5)
 
-
-    #手动测试部分（手动测试性能数据统计）,直接杀掉app进程即可结束测试统计（备注：操作过程中请不要杀掉app进程，否则测试终止）
+    # 手动测试部分（手动测试性能数据统计）,直接杀掉app进程即可结束测试统计（备注：操作过程中请不要杀掉app进程，否则测试终止）
     """signal = input("现在是手动测试部分，是否要开始你的测试，请输入(y or n): ")
     if signal == 'y':
         print("测试即将开始，请打开需要测试的app并准备执行您的操作....")
@@ -134,7 +136,7 @@ def start(dev):
     else:
         print("测试结束，输入非法，请重新输入y or n！")"""
 
-    #Monkey测试部分，如果是进行monkey测试，去除该部分注释（line134~line191）并注掉手动测试部分(line72~line131)；另外BaseReport.py中line85，line120~line132注释也要去除
+    # Monkey测试部分，如果是进行monkey测试，去除该部分注释（line134~line191）并注掉手动测试部分(line72~line131)；另外BaseReport.py中line85，line120~line132注释也要去除
     print("--------------开始执行Monkey----------------")
     path_log = Config.log_location + dev
     device_dir = os.path.exists(path_log)
@@ -166,23 +168,23 @@ def start(dev):
     pid = BaseMonitor.get_pid(Config.package_name, dev)
     cpu_kel = BaseMonitor.get_cpu_kel(dev)
     beforeBattery = BaseMonitor.get_battery(dev)
-    print("测试前电量",beforeBattery)
+    print("测试前电量", beforeBattery)
     while True:
         try:
-            with open(monkey_log,encoding='utf-8') as monkeylog:
+            with open(monkey_log, encoding='utf-8') as monkeylog:
                 time.sleep(2)  # 每2秒采集一次
                 print("----------------数据采集-----------------")
-                BaseMonitor.cpu_rate(pid,cpu_kel, dev)
+                BaseMonitor.cpu_rate(pid, cpu_kel, dev)
                 BaseMonitor.get_men(Config.package_name, dev)
                 BaseMonitor.get_fps(Config.package_name, dev)
                 BaseMonitor.get_flow(pid, Config.net, dev)
                 BaseMonitor.get_battery(dev)
                 if monkeylog.read().count('Monkey finished') > 0:
                     end_time = datetime.datetime.now()
-                    print(str(dev)+":测试完成!")
+                    print(str(dev) + ":测试完成!")
                     afterBattery = BaseMonitor.get_battery(dev)
                     writeSum(1, path=PATH("./info/sumInfo.pickle"))
-                    app[dev] ["header"]["beforeBattery"] = beforeBattery
+                    app[dev]["header"]["beforeBattery"] = beforeBattery
                     app[dev]["header"]["afterBattery"] = afterBattery
                     app[dev]["header"]["net"] = Config.net
                     app[dev]["header"]["monkey_log"] = monkey_log
@@ -190,32 +192,35 @@ def start(dev):
                     writeInfo(app, PATH("./info/info.pickle"))
                     break
         except:
-                end_time = datetime.datetime.now()
-                print(str(dev) + ":测试完成!")
-                afterBattery = BaseMonitor.get_battery(dev)
-                writeSum(1, path=PATH("./info/sumInfo.pickle"))
-                app[dev]["header"]["beforeBattery"] = beforeBattery
-                app[dev]["header"]["afterBattery"] = afterBattery
-                app[dev]["header"]["net"] = Config.net
-                app[dev]["header"]["monkey_log"] = monkey_log
-                app[dev]["header"]["time"] = str((end_time - start_time).seconds) + "秒"
-                writeInfo(app, PATH("./info/info.pickle"))
-                break
+            end_time = datetime.datetime.now()
+            print(str(dev) + ":测试完成!")
+            afterBattery = BaseMonitor.get_battery(dev)
+            writeSum(1, path=PATH("./info/sumInfo.pickle"))
+            app[dev]["header"]["beforeBattery"] = beforeBattery
+            app[dev]["header"]["afterBattery"] = afterBattery
+            app[dev]["header"]["net"] = Config.net
+            app[dev]["header"]["monkey_log"] = monkey_log
+            app[dev]["header"]["time"] = str((end_time - start_time).seconds) + "秒"
+            writeInfo(app, PATH("./info/info.pickle"))
+            break
     if readInfo(PATH("./info/sumInfo.pickle")) <= 0:
         report(readInfo(PATH("./info/info.pickle")))
         print("Kill adb server,test finished！")
         os.popen("taskkill /f /t /im adb.exe")
-        shutil.rmtree((PATH("./info/"))) # 删除持久化目录
+        shutil.rmtree((PATH("./info/")))  # 删除持久化目录
 
-#多线程启动
+
+# 多线程启动
 class MonkeyThread(threading.Thread):
     def __init__(self, dev):
         threading.Thread.__init__(self)
         self.thread_stop = False
         self.dev = dev
+
     def run(self):
         time.sleep(2)
         start(self.dev)
+
 
 def create_threads_monkey(device_list):
     thread_instances = []
@@ -226,6 +231,7 @@ def create_threads_monkey(device_list):
             thread_instances.append(instance)
         for instance in thread_instances:
             instance.start()
+
 
 if __name__ == '__main__':
     device_dir = os.path.exists(Config.info_path)
@@ -241,6 +247,11 @@ if __name__ == '__main__':
         os.mkdir(Config.log_location)  # 创建持久性目录
         print("创建持久性目录log成功，继续执行测试!")
     device_list = BaseMonitor.get_devices()
+
+    if "5037" in device_list:
+        device_list = BaseMonitor.get_devices()
+    else:
+        pass
     if ba.attached_devices():
         create_threads_monkey(device_list)
     else:
